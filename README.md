@@ -52,7 +52,7 @@ Development/testing is done against OpenSSH (8.7 currently).
 
 ## Installation
 
-    npm install ssh2
+    npm install --save "ssh2@npm:@automattic/ssh2@latest"
 
 ### Optional crypto binding
 
