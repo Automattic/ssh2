@@ -12,6 +12,12 @@ env:
 jobs:
   tests-linux:
     runs-on: ubuntu-latest
+    container: debian:trixie
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      # "localhost" resolves to ::1 first inside the container, but IPv6
+      # connections to it fail there, so make tests bind/connect via IPv4
+      NODE_OPTIONS: --dns-result-order=ipv4first
     strategy:
       fail-fast: false
       matrix:
@@ -19,6 +25,11 @@ jobs:
         - 24.x
         - 26.x
     steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git g++ make python3 openssh-client xz-utils
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
