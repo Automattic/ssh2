@@ -8,6 +8,7 @@ Development/testing is done against OpenSSH (8.7 currently).
 
 * [Requirements](#requirements)
 * [Installation](#installation)
+  * [Optional crypto binding](#optional-crypto-binding)
 * [Client Examples](#client-examples)
   * [Execute 'uptime' on a server](#execute-uptime-on-a-server)
   * [Start an interactive shell session](#start-an-interactive-shell-session)
@@ -45,13 +46,25 @@ Development/testing is done against OpenSSH (8.7 currently).
 
 ## Requirements
 
-* [node.js](http://nodejs.org/) -- v16.0.0 or newer
+* [node.js](http://nodejs.org/) -- v24 or newer
 * (Optional) [`cpu-features`](https://github.com/mscdex/cpu-features) is set as an optional package dependency (you do not need to install it explicitly/separately from `ssh2`) that will be automatically built and used if possible. See the project's documentation for its own requirements.
   * This addon is currently used to help generate an optimal default cipher list
 
 ## Installation
 
     npm install ssh2
+
+### Optional crypto binding
+
+During installation, `ssh2` also tries to compile a small native addon (`lib/protocol/crypto`) with `node-gyp`. The addon is optional: if it fails to build, installation still succeeds and `ssh2` uses its built-in JavaScript implementation, which relies on node's `crypto` module. Both implementations produce the same output.
+
+The addon exists for performance. Node's `crypto` APIs can't fully replace it, for these reasons:
+
+* **One native call per packet.** The addon encrypts or decrypts a whole SSH packet, computes or checks its MAC, and tracks its sequence number in a single call into OpenSSL. The JavaScript implementation needs several `crypto` objects and Buffer allocations per packet, and creates new cipher instances for every packet with `chacha20-poly1305@openssh.com` and AES-GCM.
+* **`chacha20-poly1305@openssh.com` is not the same as node's `chacha20-poly1305`.** Node implements the IETF AEAD construction (RFC 8439). The OpenSSH variant uses two ChaCha20 keys, encrypts the packet length separately, and computes the MAC over different data. Node's AEAD cipher therefore can't be used for SSH, so the cipher has to be assembled from raw `chacha20` plus a separate Poly1305 MAC.
+* **Node has no Poly1305 MAC.** `crypto.createHmac()` only supports HMAC, and WebCrypto has no Poly1305 either. Without the addon, `ssh2` falls back to a bundled WebAssembly Poly1305 implementation (`lib/protocol/crypto/poly1305.js`), which adds copying in and out of WebAssembly memory for every packet.
+
+Whether the addon loaded also affects the default cipher order. `chacha20-poly1305@openssh.com` is ranked higher when the addon is available, because without it that cipher is noticeably slower. To check whether the addon is in use, enable the `debug` option and look for `Custom crypto binding available`.
 
 ## Client Examples
 
@@ -845,8 +858,8 @@ You can find more examples in the `examples` directory of this repository.
 
         * **kex** - _mixed_ - Key exchange algorithms.
             * Default list (in order from most to least preferable):
-              * `curve25519-sha256` (node v14.0.0+)
-              * `curve25519-sha256@libssh.org` (node v14.0.0+)
+              * `curve25519-sha256`
+              * `curve25519-sha256@libssh.org`
               * `ecdh-sha2-nistp256`
               * `ecdh-sha2-nistp384`
               * `ecdh-sha2-nistp521`
@@ -863,7 +876,7 @@ You can find more examples in the `examples` directory of this repository.
 
         * **serverHostKey** - _mixed_ - Server host key formats.
             * Default list (in order from most to least preferable):
-              * `ssh-ed25519` (node v12.0.0+)
+              * `ssh-ed25519`
               * `ecdsa-sha2-nistp256`
               * `ecdsa-sha2-nistp384`
               * `ecdsa-sha2-nistp521`
@@ -1415,7 +1428,7 @@ XCASE          | Enable input and output of uppercase characters by preceding th
 
 ### Utilities
 
-* **generateKeyPair**(< _string_ >keyType[, < _object_ >options], < _function_ >callback) - _(void)_ - Generates an SSH key pair of the given type. `keyType` may be one of `'rsa'`, `'ecdsa'`, or `'ed25519'` (node.js v12+). `callback` has the signature `(err, keys)` where `keys` is an _object_ containing `private` and `public` properties containing the generated SSH keys. `options` may contain:
+* **generateKeyPair**(< _string_ >keyType[, < _object_ >options], < _function_ >callback) - _(void)_ - Generates an SSH key pair of the given type. `keyType` may be one of `'rsa'`, `'ecdsa'`, or `'ed25519'`. `callback` has the signature `(err, keys)` where `keys` is an _object_ containing `private` and `public` properties containing the generated SSH keys. `options` may contain:
 
     * **bits** - _integer_ - For ECDSA and RSA keys, this is the key strength. For ECDSA, this is restricted to `256`, `384`, or `521`. **Default:** (none)
 
