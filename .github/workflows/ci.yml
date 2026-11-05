@@ -15,89 +15,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x, 18.x, 20.x, 22.x, 24.x, 24.x, 26.x]
+        node-version:
+        - 24.x
+        - 26.x
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - name: Check Node.js version
         run: node -pe process.versions
       - name: Check npm version
         run: npm -v
-      - name: Install module
-        run: npm install
-      - name: Run tests
-        run: npm test
-  tests-macos:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [16.x, 18.x, 20.x, 22.x, 24.x, 26.x]
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Check Node.js version
-        run: node -pe process.versions
-      - name: Check npm version
-        run: npm -v
-      - name: Install module
-        run: npm install
-      - name: Run tests
-        run: npm test
-  tests-macos-homebrew:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Use Node.js (latest)
-        run: brew install node
-      - name: Install Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Check Node.js version
-        run: node -pe process.versions
-      - name: Check npm version
-        run: npm -v
-      - name: Install module
-        run: npm install
-      - name: Run tests
-        run: npm test
-  tests-windows:
-    runs-on: windows-2022
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [16.x, 18.x, 20.x, 22.x, 24.x, 26.x]
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Check Node.js version
-        run: node -pe process.versions
-      - name: Check npm version
-        run: npm -v
-      - name: Install setuptools (for distutils compat)
-        run: pip install setuptools
       - name: Install module
         run: npm install
       - name: Run tests

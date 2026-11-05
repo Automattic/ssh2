@@ -7,3 +7,10 @@ updates:
     # only consider updates that have been released at least 7 days ago
     cooldown:
       default-days: 7
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
