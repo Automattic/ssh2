@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@mscdex/eslint-config": "^1.1.0",
-    "eslint": "^7.32.0"
+    "eslint": "^10.13.0"
   },
   "optionalDependencies": {
     "cpu-features": "~0.0.10",
