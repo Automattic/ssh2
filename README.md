@@ -2,7 +2,7 @@
 
 SSH2 client and server modules written in pure JavaScript for [node.js](http://nodejs.org/).
 
-Development/testing is done against OpenSSH (8.7 currently).
+Development/testing is done against [Debian `trixie` and OpenSSH (10.0 currently)](https://github.com/Automattic/ssh2/pull/6).
 
 # Table of Contents
 
